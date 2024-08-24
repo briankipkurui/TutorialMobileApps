@@ -1,10 +1,13 @@
-import { useLayoutEffect } from "react";
+import { useContext, useLayoutEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import IconButton from "../components/ui/IconButton";
 import { GlobalStyles } from "../constants/styles";
 import Button from "../components/ui/Button";
+import { ExpensesContext } from "../store/Expenses-context";
+import ExpenseForm from "../components/manageExpense/ExpensesForm";
 
 function ManageExpense({ route, navigation }) {
+    const expenseCtx = useContext(ExpensesContext)
     const editExpenseId = route.params?.expenseId
     const isEditing = !!editExpenseId
 
@@ -16,16 +19,34 @@ function ManageExpense({ route, navigation }) {
 
 
     function deleteExpenseHandler() {
+        expenseCtx.deleteExpense(editExpenseId)
         navigation.goBack()
     }
     function cancelHandler() {
         navigation.goBack()
     }
     function confirmHandler() {
+        if (isEditing) {
+            expenseCtx.updateExpense(
+                editExpenseId,
+                {
+                    description: 'Test111',
+                    amount: 39.99,
+                    date: new Date('2024-08-23')
+                }
+            )
+        } else {
+            expenseCtx.addExpenses({
+                description: 'Test',
+                amount: 19.99,
+                date: new Date('2024-08-23')
+            })
+        }
         navigation.goBack()
     }
     return (
         <View style={styles.container}>
+            <ExpenseForm/>
             <View style={styles.buttons}>
                 <Button style={styles.button} mode="flat" onPress={cancelHandler}>Cancle</Button>
                 <Button style={styles.button} onPress={confirmHandler}>{isEditing ? 'Update' : 'Add'}</Button>
@@ -53,11 +74,13 @@ const styles = StyleSheet.create({
     buttons: {
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop:100
     },
     button: {
         minWidth: 120,
-        marginHorizontal: 8
+        marginHorizontal: 8,
+        marginBottom:30
     },
     deleteContainer: {
         marginTop: 16,
